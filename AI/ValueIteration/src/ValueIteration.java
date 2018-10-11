@@ -3,8 +3,15 @@ public class ValueIteration {
     public static int ACTION_CD=1;
     public static int ACTION_STOCK=2;
 
+    public static double DISCOUNT_FACTOR=1;
+
+    private static double INIT_MONEY=0;
+
 
     public void doIteration(State initState){
+
+        INIT_MONEY=initState.getCurrentMoney();
+
 
         System.out.println(getV(initState));
 
@@ -47,20 +54,20 @@ public class ValueIteration {
             State nextState=new State(currentState.getYear()+1,1.1*currentState.getCurrentMoney());
             double reward=getReward(currentState,ACTION_CD,nextState);
 
-            return (reward+getV(nextState));
+            return (reward+DISCOUNT_FACTOR*getV(nextState));
 
         }else{  // STOCK
             //two possiblities
             State nextState1=new State(currentState.getYear()+1,1.3*currentState.getCurrentMoney());
             double reward1=getReward(currentState,ACTION_STOCK,nextState1);
 
-            double q1=0.7*(reward1+getV(nextState1));
+            double q1=0.7*(reward1+DISCOUNT_FACTOR*getV(nextState1));
 
 
             State nextState2=new State(currentState.getYear()+1,0.9*currentState.getCurrentMoney());
             double reward2=getReward(currentState,ACTION_STOCK,nextState2);
 
-            double q2=0.3*(reward2+getV(nextState2));
+            double q2=0.3*(reward2+DISCOUNT_FACTOR*getV(nextState2));
 
 
             return q1+q2;
@@ -69,19 +76,13 @@ public class ValueIteration {
 
 
     private double getReward(State currentState,int action,State nextState){
-        double basicProfit=nextState.getCurrentMoney()-currentState.getCurrentMoney();
+        double basicProfit=nextState.getCurrentMoney()-INIT_MONEY;
+        double termProfit=nextState.getCurrentMoney()-currentState.getCurrentMoney();
 
-        if(action==ACTION_CD){
-            //we suggest to cd
-            return 1.2*basicProfit;
-        }else{ //stock
-
-            //if we earn some money in the stock, we should not be so happy
-            if(basicProfit>=0){
-                return basicProfit*0.7;
-            }else {
-                return basicProfit;
-            }
+        if(basicProfit>0){
+            return basicProfit;
+        }else {
+            return -10+basicProfit;
         }
 
     }
